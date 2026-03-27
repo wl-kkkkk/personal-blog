@@ -3,8 +3,27 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blog.mapper.PostMapper">
+
     <select id="findAll" resultType="com.blog.entity.Post">
         select * from post
     </select>
+
+    <select id="getById" resultType="com.blog.entity.Post">
+        select * from post where id=#{id}
+    </select>
+
+    <insert id="insert">
+        insert into post(title,context,user_id,create_time)
+        values (#{title},#{context},#{userId},#{createTime})
+
+    </insert>
+
+    <update id="update">
+        update post set title=#{title}, context=#{context} where id=#{id}
+    </update>
+
+    <delete id="delete">
+        delete from post where id=#{id}
+    </delete>
 
 </mapper>

@@ -15,7 +15,7 @@ public class TestController {
     private PostMapper postMapper;
 
     @Test
-    public void test() {
+    public void testFindAll() {
         List<Post> posts = postMapper.findAll();
         System.out.println("查询结果：" + posts);
     }
