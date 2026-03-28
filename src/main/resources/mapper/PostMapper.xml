@@ -8,6 +8,10 @@
         select * from post
     </select>
 
+    <select id="getByPage" resultType="com.blog.entity.Post">
+        select * from post order by create_time desc limit #{offset}, #{size}
+    </select>
+
     <select id="getById" resultType="com.blog.entity.Post">
         select * from post where id=#{id}
     </select>
@@ -25,5 +29,9 @@
     <delete id="delete">
         delete from post where id=#{id}
     </delete>
+
+    <select id="searchByTitle" resultType="com.blog.entity.Post">
+        select * from post where title like concat('%',#{keyword},'%')
+    </select>
 
 </mapper>

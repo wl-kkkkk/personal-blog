@@ -19,6 +19,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<Post> page(int pageNum,int pageSize){
+        int offset = (pageNum-1)*pageSize;
+        return postMapper.getByPage(offset,pageSize);
+    }
+
+    @Override
     public Post getById(Long id) {
         return postMapper.getById(id);
     }
@@ -36,5 +42,10 @@ public class PostServiceImpl implements PostService {
     @Override
     public void delete(Long id) {
         postMapper.delete(id);
+    }
+
+    @Override
+    public List<Post> searchByTitle(String keyword){
+        return postMapper.searchByTitle(keyword);
     }
 }

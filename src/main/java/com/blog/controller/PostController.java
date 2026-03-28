@@ -20,6 +20,11 @@ public class PostController {
         return postService.list();
     }
 
+    @GetMapping("/page")
+    public List<Post> getByPage(@RequestParam int pageNum,@RequestParam int pageSize){
+        return postService.page(pageNum,pageSize);
+    }
+
     @GetMapping("/{id}")
     public Post getById(@PathVariable Long id){
         return postService.getById(id);
@@ -41,5 +46,10 @@ public class PostController {
     public String update(@PathVariable Long id){
         postService.delete(id);
         return "success";
+    }
+
+    @GetMapping("/search")
+    public List<Post> searchByTitle(@RequestParam String keyword){
+        return postService.searchByTitle(keyword);
     }
 }
