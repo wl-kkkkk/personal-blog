@@ -2,6 +2,7 @@ package com.blog.controller;
 
 import com.blog.entity.User;
 import com.blog.service.UserService;
+import com.blog.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,7 @@ public class UserController {
     @PostMapping("/login")
     public String login(@RequestBody User user){
         userService.login(user.getUsername(),user.getPassword());
-        return "success";
+        String token= JwtUtil.generateToken(user.getUsername());
+        return token ;
     }
 }
