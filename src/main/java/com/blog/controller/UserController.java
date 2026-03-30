@@ -1,5 +1,6 @@
 package com.blog.controller;
 
+import com.blog.annotation.NoAuth;
 import com.blog.entity.User;
 import com.blog.service.UserService;
 import com.blog.utils.JwtUtil;
@@ -16,10 +17,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @NoAuth
     @PostMapping("/login")
     public String login(@RequestBody User user){
         userService.login(user.getUsername(),user.getPassword());
-        String token= JwtUtil.generateToken(user.getUsername());
+        String token= JwtUtil.generateToken(user.getId());
         return token ;
     }
 }

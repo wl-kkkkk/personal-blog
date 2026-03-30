@@ -1,13 +1,12 @@
 package com.blog.utils;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.Map;
 
 public class JwtUtil {
 
@@ -19,22 +18,21 @@ public class JwtUtil {
     }
 
     //生成token
-    public static String generateToken(String username){
+    public static String generateToken(Long userId){
         return Jwts.builder()
-                .subject(username)
+                .subject(String.valueOf(userId))
                 .expiration(new Date(System.currentTimeMillis()+3600*1000))
                 .signWith(getKey(),Jwts.SIG.HS256)
                 .compact();
     }
 
     //解析token
-    public static String parseToken(String token){
+    public static Claims parseToken(String token){
         return Jwts.parser()
                 .verifyWith(getKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     //验证token
@@ -45,5 +43,12 @@ public class JwtUtil {
         }catch (Exception e){
             return false;
         }
+    }
+
+    //判断token是否快要过期
+    public static boolean isExpireSoon(Claims claims){
+        Date expiration=claims.getExpiration();
+        long remain=expiration.getTime()-System.currentTimeMillis();
+        return remain<(1000*60*15);
     }
 }
