@@ -15,4 +15,5 @@ public interface PostMapper {
     Post getById(Long id);
     List<Post> getByPage(@Param("offset") int offset,@Param("size") int size);
     List<Post> searchByTitle(String keyword);
+    List<Post> selectHotPosts();
 }

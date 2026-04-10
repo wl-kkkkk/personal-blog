@@ -1,12 +1,16 @@
 package com.blog.controller;
 
+import com.blog.annotation.NoAuth;
 import com.blog.entity.Post;
 import com.blog.mapper.PostMapper;
 import com.blog.service.PostService;
+import com.blog.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.blog.utils.Result.success;
 
 @RestController
 @RequestMapping("/post")
@@ -43,7 +47,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public String update(@PathVariable Long id){
+    public String delete(@PathVariable Long id){
         postService.delete(id);
         return "success";
     }
@@ -52,4 +56,11 @@ public class PostController {
     public List<Post> searchByTitle(@RequestParam String keyword){
         return postService.searchByTitle(keyword);
     }
+
+    @GetMapping("/hot")
+    public Result<List<Post>> getHotPosts(){
+        List<Post> hotposts=postService.getHotPosts();
+        return Result.success(hotposts);
+    }
+
 }

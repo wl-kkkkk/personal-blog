@@ -10,7 +10,7 @@ import java.util.Date;
 
 public class JwtUtil {
 
-    private static final String SECRET = "my_test_secret_key_2024_32_bytes!!";
+    private static final String SECRET = "my_test_secret_key_2026_32_bytes!!";
 
     //获取SECERT
     public static SecretKey getKey(){
