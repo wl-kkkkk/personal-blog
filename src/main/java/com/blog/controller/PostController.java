@@ -20,13 +20,13 @@ public class PostController {
     private PostService postService;
 
     @GetMapping("/list")
-    public List<Post> findAll(){
-        return postService.list();
+    public Result<List<Post>> findAll(){
+        return Result.success(postService.list());
     }
 
     @GetMapping("/page")
-    public List<Post> getByPage(@RequestParam int pageNum,@RequestParam int pageSize){
-        return postService.page(pageNum,pageSize);
+    public Result<List<Post>> getByPage(@RequestParam int pageNum,@RequestParam int pageSize){
+        return Result.success(postService.page(pageNum,pageSize));
     }
 
     @GetMapping("/{id}")
@@ -35,26 +35,26 @@ public class PostController {
     }
 
     @PostMapping("/add")
-    public String add(@RequestBody Post post){
+    public Result add(@RequestBody Post post){
         postService.add(post);
-        return "success";
+        return Result.success();
     }
 
     @PutMapping("/update")
-    public String update(@RequestBody Post post){
+    public Result update(@RequestBody Post post){
         postService.update(post);
-        return "success";
+        return Result.success();
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id){
+    public Result delete(@PathVariable Long id){
         postService.delete(id);
-        return "success";
+        return Result.success();
     }
 
     @GetMapping("/search")
-    public List<Post> searchByTitle(@RequestParam String keyword){
-        return postService.searchByTitle(keyword);
+    public Result<List<Post>> searchByTitle(@RequestParam String keyword){
+        return Result.success(postService.searchByTitle(keyword));
     }
 
     @GetMapping("/hot")
