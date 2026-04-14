@@ -22,6 +22,9 @@ public class PostServiceImpl implements PostService {
     @Autowired
     private StringRedisTemplate redisTemplate;
     private static final String HOT_POST_KEY="hot:posts";
+    private static final String POST_VIEW_KEY="posts:view:";
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public List<Post> list() {
@@ -36,7 +39,12 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post getById(Long id) {
-        return postMapper.getById(id);
+        Post post =postMapper.getById(id);
+        if(post!=null){
+            String count = stringRedisTemplate.opsForValue().get(POST_VIEW_KEY + id);
+            post.setViewCount(id);
+        }
+        return post;
     }
 
     @Override
@@ -77,5 +85,12 @@ public class PostServiceImpl implements PostService {
             return postMapper.selectHotPosts();
         }
     }
+
+    @Override
+    public void incrementViewCount(Long id){
+        //先更新缓存（高频读写场景）
+        redisTemplate.opsForValue().increment(POST_VIEW_KEY+id);
+    }
+
 
 }

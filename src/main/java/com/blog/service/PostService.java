@@ -13,4 +13,5 @@ public interface PostService {
     void delete(Long id);
     List<Post> searchByTitle(String keyword);
     List<Post> getHotPosts();
+    void incrementViewCount(Long id);
 }

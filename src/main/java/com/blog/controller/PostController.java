@@ -30,8 +30,8 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public Post getById(@PathVariable Long id){
-        return postService.getById(id);
+    public Result getById(@PathVariable Long id){
+        return Result.success(postService.getById(id));
     }
 
     @PostMapping("/add")
