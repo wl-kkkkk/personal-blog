@@ -3,15 +3,12 @@ package com.blog.service.impl;
 import com.blog.entity.Post;
 import com.blog.mapper.PostMapper;
 import com.blog.service.PostService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.blog.utils.CacheClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -19,12 +16,14 @@ public class PostServiceImpl implements PostService {
     @Autowired
     private PostMapper postMapper;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
     private static final String HOT_POST_KEY="hot:posts";
     private static final String POST_VIEW_KEY="posts:view:";
+    private static final String GET_POST_KEY="cache:post:";
+
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private CacheClient cacheClient;
 
     @Override
     public List<Post> list() {
@@ -39,12 +38,43 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post getById(Long id) {
-        Post post =postMapper.getById(id);
-        if(post!=null){
-            String count = stringRedisTemplate.opsForValue().get(POST_VIEW_KEY + id);
-            post.setViewCount(id);
-        }
+        //避免缓存穿透+缓存雪崩
+        Post post = cacheClient.getWithPassThrough(GET_POST_KEY, id, Post.class, postMapper::getById);
         return post;
+        /*//避免缓存穿透
+        String strJson = stringRedisTemplate.opsForValue().get(GET_POST_KEY + id);
+        //查询缓存
+        if(StringUtils.isNotBlank(strJson)){
+            try {
+                Post post = objectMapper.readValue(strJson,Post.class);
+                return post;
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("缓存反序列化失败");
+            }
+        }
+        //是否是空内容,命中的是""
+        if(strJson!=null){
+            return null;
+        }
+        //查询数据库
+        Post post =postMapper.getById(id);
+        //数据库没有，缓存空对象
+        if(post==null){
+            try {
+                stringRedisTemplate.opsForValue().set(GET_POST_KEY+id,objectMapper.writeValueAsString(""));
+                return null;
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("写入空值失败");
+            }
+        }
+        //防止缓存雪崩并写入redis
+        try {
+            long ttl=10+ RandomUtils.nextInt(0,100);
+            stringRedisTemplate.opsForValue().set(GET_POST_KEY+id, objectMapper.writeValueAsString(post),ttl,TimeUnit.MINUTES);
+            return post;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("缓存写入失败");
+        }*/
     }
 
     @Override
@@ -69,27 +99,55 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<Post> getHotPosts(){
-        try {
-            String json = redisTemplate.opsForValue().get(HOT_POST_KEY);
-            ObjectMapper mapper=new ObjectMapper();
-            if(json!=null){
-                return mapper.readValue(json, new TypeReference<List<Post>>() {
-                });
-            }
-            //Redis没有查mysql
-            List<Post> posts = postMapper.selectHotPosts();
-            redisTemplate.opsForValue().set(HOT_POST_KEY,mapper.writeValueAsString(posts),5, TimeUnit.MINUTES);
-            return posts;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return postMapper.selectHotPosts();
+
+        List<Post> hotPosts=cacheClient
+                .getWithLogicalExpire(HOT_POST_KEY,postMapper::selectHotPosts);
+
+        return hotPosts;
+        /*String strJson = stringRedisTemplate.opsForValue().get(HOT_POST_KEY);
+        if(strJson==null){
+            return null;
         }
+
+        //命中，看是否过期
+        RedisData hotPosts = null;
+        try {
+            hotPosts = objectMapper.readValue(strJson, RedisData.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("未能写入数据");
+        }
+        LocalDateTime expireTime=hotPosts.getExpireTime();
+
+        //未过期，返回数据即可
+        if(expireTime.isAfter(LocalDateTime.now())){
+            return (List<Post>) hotPosts.getData();
+        }
+
+        //过期，缓存重建
+        Boolean isLock=tryLock(GET_LOCK_KEY);
+        //成功获取互斥锁
+        if(!isLock){
+            CACHE_REBUILD_EXECUTOR.submit(()->{
+                try {
+                    List<Post> newhotPosts=postMapper.selectHotPosts();
+                    RedisData reHotPosts=new RedisData(newhotPosts,LocalDateTime.now().plusHours(24L));
+                    stringRedisTemplate.opsForValue().set(HOT_POST_KEY,objectMapper
+                            .writeValueAsString(reHotPosts),24L,TimeUnit.HOURS);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    unLock(GET_LOCK_KEY);
+                }
+            });
+        }
+        //未能获取互斥锁
+        return (List<Post>) hotPosts.getData();*/
     }
 
     @Override
     public void incrementViewCount(Long id){
         //先更新缓存（高频读写场景）
-        redisTemplate.opsForValue().increment(POST_VIEW_KEY+id);
+        stringRedisTemplate.opsForValue().increment(POST_VIEW_KEY+id);
     }
 
 
