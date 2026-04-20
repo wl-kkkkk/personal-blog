@@ -15,5 +15,9 @@ public interface PostMapper {
     Post getById(Long id);
     List<Post> getByPage(@Param("offset") int offset,@Param("size") int size);
     List<Post> searchByTitle(String keyword);
+
+    Long setPostLikeCount(@Param("id") Long id,@Param("likeCount") Long likeCount);
     List<Post> selectHotPosts();
+/*    Boolean incrLikeCount(Long id);
+    Boolean decrLikeCount(Long id);*/
 }

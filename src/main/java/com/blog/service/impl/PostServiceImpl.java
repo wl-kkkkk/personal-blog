@@ -4,6 +4,9 @@ import com.blog.entity.Post;
 import com.blog.mapper.PostMapper;
 import com.blog.service.PostService;
 import com.blog.utils.CacheClient;
+import com.blog.utils.UserContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,8 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private CacheClient cacheClient;
 
@@ -80,16 +85,39 @@ public class PostServiceImpl implements PostService {
     @Override
     public void add(Post post) {
         postMapper.insert(post);
+        //第一次查询写入缓存即可
     }
 
     @Override
     public void update(Post post) {
         postMapper.update(post);
+        //更多删少
+        Long id=post.getId();
+        stringRedisTemplate.delete(GET_POST_KEY+id);
+        //延迟双删
+        new Thread(()->{
+            try {
+                Thread.sleep(100);
+                stringRedisTemplate.delete(GET_POST_KEY+id);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 
     @Override
     public void delete(Long id) {
         postMapper.delete(id);
+        stringRedisTemplate.delete(GET_POST_KEY+id);
+        //延迟双删
+        new Thread(()->{
+            try {
+                Thread.sleep(100);
+                stringRedisTemplate.delete(GET_POST_KEY+id);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 
     @Override
@@ -144,11 +172,27 @@ public class PostServiceImpl implements PostService {
         return (List<Post>) hotPosts.getData();*/
     }
 
-    @Override
-    public void incrementViewCount(Long id){
-        //先更新缓存（高频读写场景）
-        stringRedisTemplate.opsForValue().increment(POST_VIEW_KEY+id);
-    }
+
+/*    @Override
+    public void likeBlog(Long id){
+        //获取登录用户
+        Long userId = UserContext.getUserId();
+
+        //判断当前登录用户是否点赞
+        String key="blog:liked:"+id;
+        Boolean isMember = stringRedisTemplate.opsForSet().isMember(key, userId.toString());
+        if(BooleanUtils.isFalse(isMember)){
+            boolean isSuccess=postMapper.incrLikeCount(id);
+            if(isSuccess){
+                stringRedisTemplate.opsForSet().add(key,userId.toString());
+            }
+        }else{
+            boolean isSuccess=postMapper.decrLikeCount(id);
+            if(isSuccess){
+                stringRedisTemplate.opsForSet().remove(key,userId.toString());
+            }
+        }
+    }*/
 
 
 }

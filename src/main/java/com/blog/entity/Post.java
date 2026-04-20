@@ -8,7 +8,7 @@ public class Post {
     private String context;
     private Long userId;
     private Date createTime;
-    private Long viewCount;
+    private Long likeCount;
 
     @Override
     public String toString() {
@@ -18,7 +18,7 @@ public class Post {
                 ", context='" + context + '\'' +
                 ", userId=" + userId +
                 ", createTime=" + createTime +
-                ", viewCount=" + viewCount +
+                ", likeCount=" + likeCount +
                 '}';
     }
 
@@ -62,11 +62,11 @@ public class Post {
         this.createTime = createTime;
     }
 
-    public Long getViewCount() {
-        return viewCount;
+    public Long getLikeCount() {
+        return likeCount;
     }
 
-    public void setViewCount(Long viewCount) {
-        this.viewCount = viewCount;
+    public void setLikeCount(Long likeCount) {
+        this.likeCount = likeCount;
     }
 }

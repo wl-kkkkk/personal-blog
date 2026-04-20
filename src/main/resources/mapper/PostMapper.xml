@@ -33,9 +33,21 @@
     <select id="searchByTitle" resultType="com.blog.entity.Post">
         select * from post where title like concat('%',#{keyword},'%')
     </select>
+
+    <update id="setPostLikeCount">
+        update post set like_count=#{likeCount} where id=#{id}
+    </update>
     
     <select id="selectHotPosts" resultType="com.blog.entity.Post">
-        select * from post ORDER BY view_count desc limit 5
+        select * from post ORDER BY like_count desc limit 5
     </select>
+
+<!--    <update id="incrLikeCount">
+        update post set like_count=like_count+1 where id=#{id}
+    </update>
+
+    <update id="decrLikeCount">
+        update post set like_count=like_count-1 where id=#{id}
+    </update>-->
 
 </mapper>

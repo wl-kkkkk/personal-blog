@@ -23,7 +23,7 @@ public class PostController {
     }
 
     @GetMapping("/page")
-    public Result<List<Post>> getByPage(@RequestParam int pageNum,@RequestParam int pageSize){
+    public Result<List<Post>> getByPage(@PathVariable int pageNum,@PathVariable int pageSize){
         return Result.success(postService.page(pageNum,pageSize));
     }
 
@@ -51,7 +51,7 @@ public class PostController {
     }
 
     @GetMapping("/search")
-    public Result<List<Post>> searchByTitle(@RequestParam String keyword){
+    public Result<List<Post>> searchByTitle(@PathVariable String keyword){
         return Result.success(postService.searchByTitle(keyword));
     }
 
@@ -60,5 +60,10 @@ public class PostController {
         List<Post> hotposts=postService.getHotPosts();
         return Result.success(hotposts);
     }
+
+/*    @PutMapping("/like/{id}")
+    public Result likeBlog(@PathVariable Long id){
+        return Result.success(postService);
+    }*/
 
 }

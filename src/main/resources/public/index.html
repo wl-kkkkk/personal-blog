@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background-color: #000000;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        /* 顶部导航 */
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            font-size: 18px;
+        }
+
+        .nav-left {
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .nav-right span {
+            margin-left: 20px;
+            cursor: pointer;
+        }
+
+        /* 中间内容 */
+        .center {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .time {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .date {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* 搜索框 */
+        .search {
+            width: 500px;
+            padding: 15px;
+            border-radius: 30px;
+            border: none;
+            outline: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .search::placeholder {
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 顶部 -->
+<div class="nav">
+    <div class="nav-left">WANGLIU</div>
+    <div class="nav-right">
+        <span>首页</span>
+        <span>文章</span>
+        <span>相册</span>
+        <span>留言</span>
+        <span>热点</span>
+    </div>
+</div>
+
+<!-- 中间 -->
+<div class="center">
+    <div class="time" id="time"></div>
+    <div class="date" id="date"></div>
+    <input class="search" placeholder="搜点什么吧..." />
+</div>
+
+<script>
+    function updateTime() {
+        const now = new Date();
+
+        const time = now.toLocaleTimeString();
+        const date = now.toLocaleDateString();
+
+        document.getElementById('time').innerText = time;
+        document.getElementById('date').innerText = date;
+    }
+
+    setInterval(updateTime, 1000);
+    updateTime();
+</script>
+
+</body>
+</html>

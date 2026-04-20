@@ -17,6 +17,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
+    /**
+     * 用户登录
+     * 使用用户名和密码进行登录认证
+     */
     @NoAuth
     @PostMapping("/login")
     public String login(@RequestBody User user){
