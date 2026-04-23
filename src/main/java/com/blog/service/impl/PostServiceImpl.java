@@ -19,7 +19,7 @@ public class PostServiceImpl implements PostService {
     @Autowired
     private PostMapper postMapper;
 
-    private static final String HOT_POST_KEY="hot:posts";
+    private static final String HOT_POST_KEY="posts:hot:zset";
     private static final String POST_VIEW_KEY="posts:view:";
     private static final String GET_POST_KEY="cache:post:";
 
@@ -173,26 +173,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-/*    @Override
-    public void likeBlog(Long id){
-        //获取登录用户
-        Long userId = UserContext.getUserId();
-
-        //判断当前登录用户是否点赞
-        String key="blog:liked:"+id;
-        Boolean isMember = stringRedisTemplate.opsForSet().isMember(key, userId.toString());
-        if(BooleanUtils.isFalse(isMember)){
-            boolean isSuccess=postMapper.incrLikeCount(id);
-            if(isSuccess){
-                stringRedisTemplate.opsForSet().add(key,userId.toString());
-            }
-        }else{
-            boolean isSuccess=postMapper.decrLikeCount(id);
-            if(isSuccess){
-                stringRedisTemplate.opsForSet().remove(key,userId.toString());
-            }
-        }
-    }*/
 
 
 }

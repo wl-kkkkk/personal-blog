@@ -4,6 +4,7 @@ import com.blog.annotation.NoAuth;
 import com.blog.entity.User;
 import com.blog.service.UserService;
 import com.blog.utils.JwtUtil;
+import com.blog.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,9 +25,9 @@ public class UserController {
      */
     @NoAuth
     @PostMapping("/login")
-    public String login(@RequestBody User user){
-        userService.login(user.getUsername(),user.getPassword());
-        String token= JwtUtil.generateToken(user.getId());
-        return token ;
+    public Result login(@RequestBody User user){
+        User dbUser=userService.login(user.getUsername(),user.getPassword());
+        String token= JwtUtil.generateToken(dbUser.getId());
+        return Result.success(token) ;
     }
 }

@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blog.mapper.PostLikeMapper">
     <insert id="insert">
-        insert into post_like (user_id,post_id) values (#{userId},#{postId})
+        insert into post_like (user_id,post_id,create_time) values (#{userId},#{postId},#{createTime})
     </insert>
 
     <delete id="delete">
@@ -12,6 +12,10 @@
     </delete>
 
     <select id="isLike" resultType="com.blog.entity.PostLike">
-        select * from post_liek where user_id=#{userId} and post_id=#{postId}
+        select * from post_like where user_id=#{userId} and post_id=#{postId}
+    </select>
+
+    <select id="selectUsersByPost" resultType="com.blog.entity.User">
+        select user_id from post_like wherre post_id=#{postId}
     </select>
 </mapper>

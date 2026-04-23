@@ -9,6 +9,7 @@ public class Post {
     private Long userId;
     private Date createTime;
     private Long likeCount;
+    private Long commentCount;
 
     @Override
     public String toString() {
@@ -19,6 +20,7 @@ public class Post {
                 ", userId=" + userId +
                 ", createTime=" + createTime +
                 ", likeCount=" + likeCount +
+                ", commentCount=" + commentCount +
                 '}';
     }
 
@@ -68,5 +70,13 @@ public class Post {
 
     public void setLikeCount(Long likeCount) {
         this.likeCount = likeCount;
+    }
+
+    public Long getCommentCount() {
+        return commentCount;
+    }
+
+    public void setCommentCount(Long commentCount) {
+        this.commentCount = commentCount;
     }
 }

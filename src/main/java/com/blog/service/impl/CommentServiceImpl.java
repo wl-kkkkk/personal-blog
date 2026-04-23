@@ -2,9 +2,11 @@ package com.blog.service.impl;
 
 import com.blog.entity.Comment;
 import com.blog.mapper.CommentMapper;
+import com.blog.mapper.PostMapper;
 import com.blog.service.CommentService;
 import com.blog.utils.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,6 +19,13 @@ public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private CommentMapper commentMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private PostMapper postMapper;
+
+    private static final String COMMENT_COUNT_KEY="comment:count:";//用string存储
+    private static final String COMMENT_CHANGED_KEY="comment:changed";//用set存储更新过评论数量的文章id
 
     @Override
     public void publishComment(Comment comment) {
@@ -24,8 +33,20 @@ public class CommentServiceImpl implements CommentService {
         Long userId= UserContext.getUserId();
         comment.setUserId(userId);
         if(comment.getParentId()==null) comment.setParentId(0L);
-
         commentMapper.publishComment(comment);
+
+        Long postId=comment.getPostId();
+        //定时任务更新文章评论数
+        String commentCountKey=COMMENT_COUNT_KEY+postId;
+        //先做个懒加载，看是否在内存中
+        Boolean isExist = stringRedisTemplate.hasKey(commentCountKey);
+        if(isExist==false){
+            stringRedisTemplate.opsForValue().set(commentCountKey,postMapper.getById(postId).getCommentCount().toString());
+        }
+        stringRedisTemplate.opsForValue().increment(commentCountKey);
+
+        //记录改变的文章
+        stringRedisTemplate.opsForSet().add(COMMENT_CHANGED_KEY,postId.toString());
     }
 
     @Override

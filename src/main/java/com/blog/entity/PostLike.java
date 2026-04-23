@@ -9,8 +9,7 @@ public class PostLike {
     private LocalDateTime createTime;
 
     public PostLike(){}
-    public PostLike(Long id, Long userId, LocalDateTime createTime, Long postId) {
-        this.id = id;
+    public PostLike(Long userId, LocalDateTime createTime, Long postId) {
         this.userId = userId;
         this.createTime = createTime;
         this.postId = postId;

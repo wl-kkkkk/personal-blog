@@ -12,31 +12,31 @@ import org.springframework.stereotype.Service;
 public class PostLikeServiceImpl implements PostLikeService {
 
     @Autowired
-    private static PostLikeMapper postLikeMapper;
-    @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
-    private static final String POST_LIKE_USER="post:like:user:";//set后更userId，值为postId
+    private static final String POST_LIKE_USER="post:like:user";//set 后跟postId,值为userId，存储列表
     private static final String POST_LIKE_COUNT="post:like:count:";//值为String
     private static final String POST_CHANGE_LIKE="post:like:change";//存储修改过点赞数的文章id
+    private static final String USER_CHANGE_LIKE="post:user:change:";//hash 后跟postId，fileduserId,value1or-1
 
     @Override
     public void like(Long postId) {
         Long userId = UserContext.getUserId();
         String userKey=POST_LIKE_USER+userId;
         String countKey=POST_LIKE_COUNT+postId;
+        String userChangeKey=USER_CHANGE_LIKE+postId;
 
         //查询是否存在于缓存中
-        Boolean isMember = stringRedisTemplate.opsForSet().isMember(userKey, postId);
+        Boolean isMember = stringRedisTemplate.opsForSet().isMember(userKey, userId);
         if(BooleanUtils.isFalse(isMember)){
-            //不存在就加入并更新数据库？并更新点赞量
-            stringRedisTemplate.opsForSet().add(userKey,postId.toString());
-            postLikeMapper.insert(userId,postId);
+            //不存在(没点赞)就加入喜爱列表&&存入改变的用户hash表中&&更新点赞量
+            stringRedisTemplate.opsForSet().add(userKey,userId.toString());
+            stringRedisTemplate.opsForHash().put(userChangeKey,userId,"1");
             stringRedisTemplate.opsForValue().increment(countKey);
         }else{
-            //存在就删除，并更新数据库？,并更新点赞量
-            stringRedisTemplate.opsForSet().remove(userKey,postId);
-            postLikeMapper.delete(userId,postId);
+            //存在就删除喜爱列表中对应的键值对&&存入改变的用户hash表中&&更新点赞量
+            stringRedisTemplate.opsForSet().remove(userKey,userId);
+            stringRedisTemplate.opsForHash().put(userChangeKey,userId,"0");
             stringRedisTemplate.opsForValue().decrement(countKey);
         }
         //存储修改过点赞数的文章id，定时任务执行

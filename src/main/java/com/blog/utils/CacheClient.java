@@ -90,7 +90,7 @@ public class CacheClient {
     * */
 
     public <R> R getWithLogicalExpire(String key,Supplier<R> dbFallback){
-        String strJson = stringRedisTemplate.opsForValue().get(key);
+        String strJson = stringRedisTemplate.opsForZSet().range(key,0,9).toString();
         if(strJson==null){
             return null;
         }

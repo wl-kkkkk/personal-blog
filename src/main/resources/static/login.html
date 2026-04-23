@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background: url('https://fastly.picsum.photos/id/330/1920/1080.jpg?hmac=1U_9bH5VS8l-_PJBf1Yrfp-d9NuhgOr4Zjditft-7sw') no-repeat center center/cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 半透明卡片 */
+        .login-box {
+            width: 350px;
+            padding: 40px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            color: white;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            margin-bottom: 30px;
+        }
+
+        .input-box {
+            margin-bottom: 20px;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .input-box input::placeholder {
+            color: #ddd;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #4facfe;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .extra {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .extra a {
+            color: #ccc;
+            text-decoration: none;
+        }
+
+        .extra a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <h2>登录</h2>
+
+    <div class="input-box">
+        <input id="username" placeholder="用户名">
+    </div>
+
+    <div class="input-box">
+        <input id="password" type="password" placeholder="密码">
+    </div>
+
+    <button class="btn" onclick="login()">登录</button>
+
+    <div class="extra">
+        <a href="#">注册账号</a>
+    </div>
+</div>
+
+<script>
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        fetch('/user/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    // ⭐ 保存 token
+                    localStorage.setItem("token", data.data);
+                    alert("登录成功");
+                    // 跳转首页
+                    window.location.href = "/index.html";
+
+                } else {
+                    alert("登录失败：" + data.msg);
+                }
+            });
+    }
+</script>
+
+</body>
+</html>

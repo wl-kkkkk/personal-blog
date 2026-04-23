@@ -12,6 +12,7 @@ public interface PostService {
     void update(Post post);
     void delete(Long id);
     List<Post> searchByTitle(String keyword);
+
     List<Post> getHotPosts();
 /*    void likeBlog(Long id);*/
 }
