@@ -114,19 +114,42 @@
             },
             body: JSON.stringify({ username, password })
         })
-            .then(res => res.json())
+            .then(res => {
+                console.log("响应状态:", res.status);
+                return res.json();
+            })
             .then(data => {
+                console.log("返回数据:", data);
+
                 if (data.code === 200) {
-                    // ⭐ 保存 token
-                    localStorage.setItem("token", data.data);
+
+                    const token = data.data;
+                    localStorage.setItem("token", token);
+
+                    try {
+                        const payload = JSON.parse(atob(token.split(".")[1]));
+                        const userId = payload.sub;
+
+                        console.log("解析出的userId:", userId);
+
+                        if (userId) {
+                            localStorage.setItem("userId", userId);
+                        }
+                    } catch (e) {
+                        console.log("token解析失败", e);
+                    }
+
                     alert("登录成功");
-                    // 跳转首页
                     window.location.href = "/index.html";
 
                 } else {
                     alert("登录失败：" + data.msg);
                 }
+            })
+            .catch(err => {
+                console.error("请求失败:", err); // 👈 关键
             });
+
     }
 </script>
 

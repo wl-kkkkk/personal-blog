@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>我的仓库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: url('https://fastly.picsum.photos/id/888/1920/1080.jpg?hmac=gILdWiv5GfYCDYWFiZrEcK8TpR6X-Mm05tExxvr6YsY') no-repeat center center/cover;
+            font-family: Arial, sans-serif;
+            color: white;
+            padding-bottom: 40px;
+        }
+
+        /* 顶部导航 */
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            font-size: 18px;
+        }
+
+        .nav-left {
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .nav-right span {
+            margin-left: 20px;
+            cursor: pointer;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-right span:hover {
+            background: transparent;
+            border-color: #fff;
+            color: #fff;
+        }
+
+        /* 页面主体布局 */
+        .main {
+            width: 1200px;
+            max-width: calc(100% - 40px);
+            margin: 20px auto 0;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        /* 左侧菜单 */
+        .left {
+            width: 220px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 14px 0;
+        }
+
+        .left-item {
+            padding: 12px 18px;
+            font-size: 16px;
+            color: #e8e8e8;
+            cursor: pointer;
+        }
+
+        .left-item.active {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+        }
+
+        /* 右侧内容区 */
+        .center {
+            flex: 1;
+            min-width: 0;
+            background: rgba(0, 0, 0, 0.28);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        /* 列表卡片 */
+        .title {
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+
+        .desc {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .list {
+            list-style: none;
+        }
+
+        .item {
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            cursor: pointer;
+        }
+
+        .item-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .item-content {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #e3e3e3;
+            margin-bottom: 10px;
+        }
+
+        .item-time {
+            font-size: 13px;
+            color: #cfcfcf;
+        }
+
+        .empty {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 16px;
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 顶部 -->
+<div class="nav">
+    <div class="nav-left">WANGLIU</div>
+    <div class="nav-right">
+        <span onclick="window.location.href='/index.html'">首页</span>
+        <span onclick="window.location.href='/article.html'">文章</span>
+        <span onclick="window.location.href='/repo.html'">仓库</span>
+        <span onclick="window.location.href='/hot.html'">热点</span>
+        <span onclick="window.location.href='/publish.html'">发布</span>
+    </div>
+</div>
+
+<!-- 中间 -->
+<div class="main">
+    <div class="left">
+        <div class="left-item active" id="tabPosts">我的文章</div>
+        <div class="left-item" id="tabComments">我的留言</div>
+    </div>
+
+    <div class="center">
+        <div class="title">仓库</div>
+        <div class="desc" id="repoDesc">正在加载你的文章...</div>
+        <ul class="list" id="resultList"></ul>
+        <div class="empty" id="emptyBox" style="display:none;">你还没有发布文章</div>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+    //页面元素缓存
+    const resultList = document.getElementById("resultList");
+    const emptyBox = document.getElementById("emptyBox");
+    const repoDesc = document.getElementById("repoDesc");
+    const tabPosts = document.getElementById("tabPosts");
+    const tabComments = document.getElementById("tabComments");
+    let currentTab = "posts";
+
+    //本地存储读取功能
+    function getStorageValue(key) {
+        return localStorage.getItem(key) || sessionStorage.getItem(key);
+    }
+
+    //字符串转JSON功能
+    function parseJsonValue(key) {
+        const raw = getStorageValue(key);
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    //token解析用户ID功能
+    function decodeJwtUserId(jwtToken) {
+        if (!jwtToken || jwtToken.split(".").length < 2) return null;
+        try {
+            const payloadPart = jwtToken.split(".")[1];
+            const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+            const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
+            const payload = JSON.parse(atob(padded));
+            return payload.userId || payload.uid || payload.id || payload.sub || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    //用户ID兜底获取功能
+    function getUserId() {
+        const fromQuery = new URLSearchParams(window.location.search).get("userId");
+        if (fromQuery) return fromQuery;
+
+        const fromStorage = getStorageValue("userId")
+            || getStorageValue("uid")
+            || getStorageValue("id");
+        if (fromStorage) return fromStorage;
+
+        const userObj = parseJsonValue("user")
+            || parseJsonValue("userInfo")
+            || parseJsonValue("loginUser");
+        if (userObj) {
+            const fromUserObj = userObj.userId || userObj.uid || userObj.id;
+            if (fromUserObj) return fromUserObj;
+        }
+
+        const fromToken = decodeJwtUserId(token);
+        if (fromToken) return String(fromToken);
+
+        return null;
+    }
+
+    //文章字段兼容功能
+    function getText(post) {
+        return post.summary || post.context || post.content || post.desc || "";
+    }
+
+    function getTitle(post) {
+        return post.title || post.name || "未命名文章";
+    }
+
+    function getTime(post) {
+        return post.createTime || post.createdAt || post.time || "";
+    }
+
+    //文章列表渲染功能
+    function renderPosts(posts) {
+        resultList.innerHTML = "";
+
+        if (!Array.isArray(posts) || posts.length === 0) {
+            emptyBox.style.display = "block";
+            repoDesc.innerText = "共 0 篇文章";
+            return;
+        }
+
+        emptyBox.style.display = "none";
+        repoDesc.innerText = `共 ${posts.length} 篇文章`;
+
+        posts.forEach(post => {
+            const li = document.createElement("li");
+            li.className = "item";
+            li.innerHTML = `
+                <div class="item-title">${getTitle(post)}</div>
+                <div class="item-content">${getText(post)}</div>
+                <div class="item-time">${getTime(post)}</div>
+            `;
+
+            li.addEventListener("click", function() {
+                const id = post.id || post.postId;
+                if (id) {
+                    window.location.href = "/post-detail.html?id=" + id;
+                }
+            });
+
+            resultList.appendChild(li);
+        });
+    }
+
+    //留言列表渲染功能
+    function renderComments(comments) {
+        resultList.innerHTML = "";
+
+        if (!Array.isArray(comments) || comments.length === 0) {
+            emptyBox.style.display = "block";
+            repoDesc.innerText = "共 0 条留言";
+            emptyBox.innerText = "你还没有留言";
+            return;
+        }
+
+        emptyBox.style.display = "none";
+        emptyBox.innerText = "你还没有发布文章";
+        repoDesc.innerText = `共 ${comments.length} 条留言`;
+
+        comments.forEach(comment => {
+            const li = document.createElement("li");
+            li.className = "item";
+            li.innerHTML = `
+                <div class="item-title">文章ID：${comment.postId || "-"}</div>
+                <div class="item-content">${comment.content || ""}</div>
+                <div class="item-time">${comment.createTime || ""}</div>
+            `;
+            resultList.appendChild(li);
+        });
+    }
+
+    //左侧菜单高亮切换
+    function setActiveTab(tab) {
+        currentTab = tab;
+        tabPosts.classList.toggle("active", tab === "posts");
+        tabComments.classList.toggle("active", tab === "comments");
+    }
+
+    //文章数据加载功能
+    function loadPosts(userId) {
+        repoDesc.innerText = "正在加载你的文章...";
+        emptyBox.innerText = "你还没有发布文章";
+        fetch(`/post/userPost?userId=${encodeURIComponent(userId)}`, {
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    renderPosts(data.data || []);
+                } else {
+                    renderPosts([]);
+                }
+            })
+            .catch(() => {
+                renderPosts([]);
+            });
+    }
+
+    //留言数据加载功能
+    function loadComments(userId) {
+        repoDesc.innerText = "正在加载你的留言...";
+        fetch(`/comment/userComments?userId=${encodeURIComponent(userId)}`, {
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    renderComments(data.data || []);
+                } else {
+                    renderComments([]);
+                }
+            })
+            .catch(() => {
+                renderComments([]);
+            });
+    }
+
+    //页面初始化
+    const userId = getUserId();
+    if (!userId) {
+        repoDesc.innerText = "未找到 userId，请在 localStorage 中设置 userId 或在地址栏加 ?userId=xxx";
+        renderPosts([]);
+    } else {
+        loadPosts(userId);
+    }
+
+    //菜单切换事件
+    tabPosts.addEventListener("click", function() {
+        setActiveTab("posts");
+        if (!userId) {
+            repoDesc.innerText = "未找到 userId，请在 localStorage 中设置 userId 或在地址栏加 ?userId=xxx";
+            emptyBox.style.display = "block";
+            emptyBox.innerText = "你还没有发布文章";
+            resultList.innerHTML = "";
+            return;
+        }
+        loadPosts(userId);
+    });
+
+    //菜单切换事件
+    tabComments.addEventListener("click", function() {
+        setActiveTab("comments");
+        if (!userId) {
+            repoDesc.innerText = "未找到 userId，请在 localStorage 中设置 userId 或在地址栏加 ?userId=xxx";
+            emptyBox.style.display = "block";
+            emptyBox.innerText = "你还没有留言";
+            resultList.innerHTML = "";
+            return;
+        }
+        loadComments(userId);
+    });
+</script>
+
+</body>
+</html>

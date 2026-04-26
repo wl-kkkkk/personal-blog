@@ -9,13 +9,13 @@ public class Result<T> {
     * */
     private Integer code;
     private String message;
-    private T date;
+    private T data;
 
     public Result(){}
-    public Result(Integer code, String message, T date) {
+    public Result(Integer code, String message, T data) {
         this.code = code;
         this.message = message;
-        this.date = date;
+        this.data = data;
     }
 
     /*
@@ -66,11 +66,11 @@ public class Result<T> {
         this.message = message;
     }
 
-    public T getDate() {
-        return date;
+    public T getData() {
+        return data;
     }
 
-    public void setDate(T date) {
-        this.date = date;
+    public void setData(T data) {
+        this.data = data;
     }
 }

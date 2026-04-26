@@ -1,6 +1,5 @@
 package com.blog.service.impl;
 
-import com.blog.mapper.PostLikeMapper;
 import com.blog.service.PostLikeService;
 import com.blog.utils.UserContext;
 import org.apache.commons.lang3.BooleanUtils;
@@ -18,6 +17,7 @@ public class PostLikeServiceImpl implements PostLikeService {
     private static final String POST_LIKE_COUNT="post:like:count:";//值为String
     private static final String POST_CHANGE_LIKE="post:like:change";//存储修改过点赞数的文章id
     private static final String USER_CHANGE_LIKE="post:user:change:";//hash 后跟postId，fileduserId,value1or-1
+    private static final String HOT_POST_KEY="posts:hot:zset";
 
     @Override
     public void like(Long postId) {
@@ -33,11 +33,17 @@ public class PostLikeServiceImpl implements PostLikeService {
             stringRedisTemplate.opsForSet().add(userKey,userId.toString());
             stringRedisTemplate.opsForHash().put(userChangeKey,userId,"1");
             stringRedisTemplate.opsForValue().increment(countKey);
+
+            //实时更新热榜+最终一致性
+            stringRedisTemplate.opsForZSet().incrementScore(HOT_POST_KEY,postId.toString(),2);
         }else{
             //存在就删除喜爱列表中对应的键值对&&存入改变的用户hash表中&&更新点赞量
             stringRedisTemplate.opsForSet().remove(userKey,userId);
             stringRedisTemplate.opsForHash().put(userChangeKey,userId,"0");
             stringRedisTemplate.opsForValue().decrement(countKey);
+
+            //实时更新热榜+最终一致性
+            stringRedisTemplate.opsForZSet().incrementScore(HOT_POST_KEY,postId.toString(),-2);
         }
         //存储修改过点赞数的文章id，定时任务执行
         stringRedisTemplate.opsForSet().add(POST_CHANGE_LIKE,postId.toString());

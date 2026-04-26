@@ -9,4 +9,5 @@ import java.util.List;
 public interface CommentMapper {
     void publishComment(Comment comment);
     List<Comment> selectByPostId(Long postId);
+    List<Comment> selectByUserId(Long userId);
 }

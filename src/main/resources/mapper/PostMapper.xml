@@ -4,12 +4,20 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blog.mapper.PostMapper">
 
+    <resultMap id="postMap" type="com.blog.entity.Post">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="comment_count" property="commentCount"/>
+    </resultMap>
+
     <select id="findAll" resultType="com.blog.entity.Post">
         select * from post
     </select>
 
-    <select id="getByPage" resultType="com.blog.entity.Post">
-        select * from post order by create_time desc limit #{offset}, #{size}
+    <select id="getByPage" resultMap="postMap">
+        select * from post where create_time>=DATE_SUB(NOW(),INTERVAL 20 DAY) order by create_time desc limit #{offset}, #{size}
     </select>
 
     <select id="getById" resultType="com.blog.entity.Post">
@@ -38,16 +46,26 @@
         update post set like_count=#{likeCount} where id=#{id}
     </update>
     
-    <select id="selectHotPosts" resultType="com.blog.entity.Post">
-        select * from post ORDER BY like_count desc limit 5
+    <select id="selectHotPosts" resultType="com.blog.dto.HotPostDTO">
+        select
+            id as postId,
+            (like_count*2+comment_count*3)/
+            (pow(DATEDIFF(NOW(),create_time)+2,0.5)) as score
+        from post
+        where create_time>=DATE_SUB(NOW(),INTERVAL 7 DAY)
+        order by score desc
+        limit 10
     </select>
 
-<!--    <update id="incrLikeCount">
-        update post set like_count=like_count+1 where id=#{id}
-    </update>
+    <select id="selectPostsByIds" resultType="com.blog.entity.Post">
+        select * from post where id in
+                           <foreach collection="postIds" item="postId" open="(" separator="," close=")">
+                               #{postId}
+                           </foreach>
+    </select>
 
-    <update id="decrLikeCount">
-        update post set like_count=like_count-1 where id=#{id}
-    </update>-->
+    <select id="searchByUserId" resultType="java.lang.Long">
+        select id from post where user_id=#{userId}
+    </select>
 
 </mapper>

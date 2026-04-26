@@ -20,4 +20,8 @@
         select * from comment where post_id = #{postId} order by create_time desc
     </select>
 
+    <select id="selectByUserId" resultType="com.blog.entity.Comment">
+        select * from comment where create_time>=DATE_SUB(NOW(),interval 7 day) order by create_time desc
+    </select>
+
 </mapper>

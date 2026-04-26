@@ -13,6 +13,14 @@ public interface PostService {
     void delete(Long id);
     List<Post> searchByTitle(String keyword);
 
+    /*
+     * 获取某个用户的所有文章
+     * controller层：getPostsByUserId
+     * service层：searchByUserId
+     * map层：searchByUserId
+     * */
+    List<Post> searchByUserId(Long userId);
+
     List<Post> getHotPosts();
 /*    void likeBlog(Long id);*/
 }

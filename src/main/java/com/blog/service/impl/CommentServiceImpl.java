@@ -4,6 +4,7 @@ import com.blog.entity.Comment;
 import com.blog.mapper.CommentMapper;
 import com.blog.mapper.PostMapper;
 import com.blog.service.CommentService;
+import com.blog.utils.CacheClient;
 import com.blog.utils.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -23,9 +24,13 @@ public class CommentServiceImpl implements CommentService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private PostMapper postMapper;
+    @Autowired
+    private CacheClient cacheClient;
 
     private static final String COMMENT_COUNT_KEY="comment:count:";//用string存储
     private static final String COMMENT_CHANGED_KEY="comment:changed";//用set存储更新过评论数量的文章id
+    private static final String HOT_POST_KEY="posts:hot:zset";
+    private static final String USER_COMMENT_KEY="user:comment:";
 
     @Override
     public void publishComment(Comment comment) {
@@ -45,6 +50,8 @@ public class CommentServiceImpl implements CommentService {
         }
         stringRedisTemplate.opsForValue().increment(commentCountKey);
 
+        //实时更新热榜+最终一致性
+        stringRedisTemplate.opsForZSet().incrementScore(HOT_POST_KEY,postId.toString(),3);
         //记录改变的文章
         stringRedisTemplate.opsForSet().add(COMMENT_CHANGED_KEY,postId.toString());
     }
@@ -76,4 +83,12 @@ public class CommentServiceImpl implements CommentService {
         }
         return roots;
     }
+
+    @Override
+    public List<Comment> selectByUserId(Long userId){
+        List<Comment> comments = cacheClient.getWithPassThrough(USER_COMMENT_KEY, userId, List.class, commentMapper::selectByUserId);
+        return comments;
+    }
+
+
 }

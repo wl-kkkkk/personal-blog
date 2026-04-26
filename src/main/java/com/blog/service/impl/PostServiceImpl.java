@@ -6,12 +6,12 @@ import com.blog.service.PostService;
 import com.blog.utils.CacheClient;
 import com.blog.utils.UserContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -20,8 +20,8 @@ public class PostServiceImpl implements PostService {
     private PostMapper postMapper;
 
     private static final String HOT_POST_KEY="posts:hot:zset";
-    private static final String POST_VIEW_KEY="posts:view:";
     private static final String GET_POST_KEY="cache:post:";
+    private static final String USER_POSTS_KEY="user:posts:";
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -82,10 +82,29 @@ public class PostServiceImpl implements PostService {
         }*/
     }
 
+    /*
+     * 获取某个用户的所有文章
+     * controller层：getPostsByUserId
+     * service层：searchByUserId
+     * map层：searchByUserId
+     * */
+    @Override
+    public List<Post> searchByUserId(Long userId){
+        List<?> postIds = cacheClient.getWithPassThrough(GET_POST_KEY, userId, List.class, postMapper::searchByUserId);
+        List<Post> posts = postIds.stream()
+                .map(id -> ((Number) id).longValue())
+                .map(postMapper::getById)
+                .collect(Collectors.toList());
+        return posts;
+    }
+
     @Override
     public void add(Post post) {
+        Long userId= UserContext.getUserId();
+        post.setUserId(userId);
+        post.setCreateTime(new Date());
         postMapper.insert(post);
-        //第一次查询写入缓存即可
+        //第一次查询写入缓存即可,懒加载
     }
 
     @Override
@@ -120,19 +139,21 @@ public class PostServiceImpl implements PostService {
         }).start();
     }
 
+
     @Override
     public List<Post> searchByTitle(String keyword){
         return postMapper.searchByTitle(keyword);
     }
 
-    @Override
+
+    /*@Override
     public List<Post> getHotPosts(){
 
         List<Post> hotPosts=cacheClient
                 .getWithLogicalExpire(HOT_POST_KEY,postMapper::selectHotPosts);
 
         return hotPosts;
-        /*String strJson = stringRedisTemplate.opsForValue().get(HOT_POST_KEY);
+        String strJson = stringRedisTemplate.opsForValue().get(HOT_POST_KEY);
         if(strJson==null){
             return null;
         }
@@ -169,7 +190,36 @@ public class PostServiceImpl implements PostService {
             });
         }
         //未能获取互斥锁
-        return (List<Post>) hotPosts.getData();*/
+        return (List<Post>) hotPosts.getData();*//*
+    }*/
+    /*
+     * 获取热榜
+     * controller层：getHotPosts
+     * service层：getHotPosts
+     * mapper层：selectPostsById(postIds)
+     * */
+    @Override
+    public List<Post> getHotPosts(){
+        //获取前十的post
+        Set<String> postIds = stringRedisTemplate.opsForZSet().range(HOT_POST_KEY, 0, 9);
+
+        if(postIds.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        //查找文章
+        List<Post> Posts=postMapper.selectPostsByIds(postIds);
+
+        //排序
+        Map<String,Post> postMap=Posts
+                .stream()
+                .collect(Collectors.toMap(p->p.getId().toString(),p->p));
+        List<Post> hotPosts=new ArrayList<>();
+        for(String postId:postIds){
+            hotPosts.add(postMap.get(postId));
+        }
+
+        return hotPosts;
     }
 
 

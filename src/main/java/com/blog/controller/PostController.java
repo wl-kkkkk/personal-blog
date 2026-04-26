@@ -22,8 +22,14 @@ public class PostController {
         return Result.success(postService.list());
     }
 
+    /*
+     * 分页查询近20天的所有文章
+     * controller：getByPage
+     * service:page
+     * mapper:getByPage
+     * */
     @GetMapping("/page")
-    public Result<List<Post>> getByPage(@PathVariable int pageNum,@PathVariable int pageSize){
+    public Result<List<Post>> getByPage(@RequestParam int pageNum,@RequestParam int pageSize){
         return Result.success(postService.page(pageNum,pageSize));
     }
 
@@ -50,20 +56,40 @@ public class PostController {
         return Result.success();
     }
 
+    /*
+    * 根据输入的内容模糊查询文章
+    * controller:searchByTitle
+    * service:searchByTitle
+    * mapper:searchByTitle
+    * */
     @GetMapping("/search")
-    public Result<List<Post>> searchByTitle(@PathVariable String keyword){
+    public Result<List<Post>> searchByTitle(@RequestParam String keyword){
         return Result.success(postService.searchByTitle(keyword));
     }
 
+    /*
+    * 获取热榜
+    * controller层：getHotPosts
+    * service层：getHotPosts
+    * mapper层：selectPostsById(postIds)
+    * */
     @GetMapping("/hot")
     public Result<List<Post>> getHotPosts(){
         List<Post> hotposts=postService.getHotPosts();
         return Result.success(hotposts);
     }
 
-/*    @PutMapping("/like/{id}")
-    public Result likeBlog(@PathVariable Long id){
-        return Result.success(postService);
-    }*/
+    /*
+    * 获取某个用户的所有文章
+    * controller层：getPostsByUserId
+    * service层：searchByUserId
+    * map层：searchByUserId
+    * */
+    @GetMapping("/userPost")
+    public Result<List<Post>> getPostsByUserId(@RequestParam Long userId){
+        List<Post> posts=postService.searchByUserId(userId);
+        return Result.success(posts);
+    }
+
 
 }

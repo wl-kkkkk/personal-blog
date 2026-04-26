@@ -22,12 +22,17 @@ public class CommentController {
     }
 
     @GetMapping("/all")
-    public Result<List<Comment>> selectByPostId(Long postId){
+    public Result<List<Comment>> getByPostId(Long postId){
         return Result.success(commentService.selectByPostId(postId));
     }
 
     @GetMapping("/list")
     public Result<List<Comment>> listByPostId(Long postId){
         return Result.success(commentService.listByPostId(postId));
+    }
+
+    @GetMapping("/userComments")
+    public Result<List<Comment>> getCommentsByUserId(@RequestParam Long userId){
+        return Result.success(commentService.selectByUserId(userId));
     }
 }

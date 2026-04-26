@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>发布文章</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: url('https://fastly.picsum.photos/id/888/1920/1080.jpg?hmac=gILdWiv5GfYCDYWFiZrEcK8TpR6X-Mm05tExxvr6YsY') no-repeat center center/cover;
+            font-family: Arial, sans-serif;
+            color: white;
+            padding-bottom: 40px;
+        }
+
+        /* 顶部导航 */
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            font-size: 18px;
+        }
+
+        .nav-left {
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .nav-right span {
+            margin-left: 20px;
+            cursor: pointer;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-right span:hover {
+            background: transparent;
+            border-color: #fff;
+            color: #fff;
+        }
+
+        /* 页面主体布局 */
+        .main {
+            width: 900px;
+            max-width: calc(100% - 40px);
+            margin: 20px auto 0;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.32);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .title {
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+
+        .form-item {
+            margin-bottom: 16px;
+        }
+
+        .label {
+            font-size: 15px;
+            color: #ddd;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input,
+        .textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            color: #fff;
+            padding: 12px 14px;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .textarea {
+            min-height: 220px;
+            resize: vertical;
+            line-height: 1.7;
+        }
+
+        .input::placeholder,
+        .textarea::placeholder {
+            color: #d0d0d0;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 6px;
+        }
+
+        .btn {
+            border: 1px solid #fff;
+            background: transparent;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .tips {
+            margin-top: 14px;
+            font-size: 14px;
+            color: #ddd;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 顶部 -->
+<div class="nav">
+    <div class="nav-left">WANGLIU</div>
+    <div class="nav-right">
+        <span onclick="window.location.href='/index.html'">首页</span>
+        <span onclick="window.location.href='/article.html'">文章</span>
+        <span onclick="window.location.href='/repo.html'">仓库</span>
+        <span onclick="window.location.href='/hot.html'">热点</span>
+        <span onclick="window.location.href='/publish.html'">发布</span>
+    </div>
+</div>
+
+<!-- 中间 -->
+<div class="main">
+    <div class="panel">
+        <div class="title">发布文章</div>
+        <div class="form-item">
+            <label class="label" for="titleInput">标题</label>
+            <input id="titleInput" class="input" placeholder="请输入文章标题" />
+        </div>
+        <div class="form-item">
+            <label class="label" for="contentInput">内容</label>
+            <textarea id="contentInput" class="textarea" placeholder="请输入文章内容"></textarea>
+        </div>
+        <div class="actions">
+            <button class="btn" id="submitBtn">提交文章</button>
+        </div>
+        <div class="tips" id="tips"></div>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+    //页面元素缓存
+    const titleInput = document.getElementById("titleInput");
+    const contentInput = document.getElementById("contentInput");
+    const submitBtn = document.getElementById("submitBtn");
+    const tips = document.getElementById("tips");
+
+    //文章提交功能
+    function submitPost() {
+        const title = titleInput.value.trim();
+        const context = contentInput.value.trim();
+        if (!title || !context) {
+            tips.innerText = "标题和内容不能为空";
+            return;
+        }
+
+        submitBtn.disabled = true;
+        tips.innerText = "正在提交...";
+
+        fetch("/post/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+                title: title,           // 标题
+                context: context,       // 内容
+                userId: null,           // 用户ID（后端会从token解析，前端传null即可）
+                createTime: null,       // 创建时间（后端会自动生成）
+                likeCount: 0,           // 点赞数（默认0）
+                commentCount: 0         // 评论数（默认0）
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 200) {
+                    tips.innerText = "发布成功，正在跳转仓库...";
+                    window.location.href = "/repo.html";
+                } else {
+                    tips.innerText = data.msg || "发布失败，请稍后再试";
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(() => {
+                tips.innerText = "网络异常，请稍后重试";
+                submitBtn.disabled = false;
+            });
+    }
+
+    //按钮事件绑定
+    submitBtn.addEventListener("click", submitPost);
+</script>
+
+</body>
+</html>
