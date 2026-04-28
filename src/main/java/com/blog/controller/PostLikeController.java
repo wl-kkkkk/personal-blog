@@ -13,8 +13,7 @@ public class PostLikeController {
     private PostLikeService postLikeService;
 
     @PutMapping("/like")
-    public Result like(@RequestParam Long postId){
-        postLikeService.like(postId);
-        return Result.success();
+    public Result<Long> like(@RequestParam Long postId){
+        return Result.success(postLikeService.like(postId));
     }
 }

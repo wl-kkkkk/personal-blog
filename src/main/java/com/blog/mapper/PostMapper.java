@@ -16,8 +16,9 @@ public interface PostMapper {
     void delete(Long id);
 
     /*
-    * 通过id获得某个文章
-    * service层：searchByUserId调用
+    * 通过id获得某个文章详细内容
+    * service层：searchByUserId调用 getById调用 publishComment调用
+    * mapper:getById
     * */
     Post getById(Long id);
 
@@ -31,7 +32,6 @@ public interface PostMapper {
     List<Post> getByPage(@Param("offset") int offset,@Param("size") int size);
     List<Post> searchByTitle(String keyword);
 
-    Long setPostLikeCount(@Param("id") Long id,@Param("likeCount") Long likeCount);
     List<HotPostDTO> selectHotPosts();
     List<Post> selectPostsByIds(Set<String> postIds);
 

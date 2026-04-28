@@ -1,5 +1,6 @@
 package com.blog.task;
 
+import com.blog.entity.Post;
 import com.blog.mapper.PostMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -30,7 +31,9 @@ public class CommentSyncTask {
         for(String postId:postIds){
             String commentCountKey=COMMENT_COUNT_KEY+postId;
             Long count= Long.parseLong(stringRedisTemplate.opsForValue().get(commentCountKey));
-            postMapper.getById(Long.parseLong(postId)).setCommentCount(count);
+            Post post = postMapper.getById(Long.parseLong(postId));
+            post.setCommentCount(count);
+            postMapper.update(post);
         }
 
         //设置需要更新分数的文章

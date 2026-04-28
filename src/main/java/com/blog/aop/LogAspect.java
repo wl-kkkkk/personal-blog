@@ -44,7 +44,7 @@ public class LogAspect {
             long end = System.currentTimeMillis();
             log.info("响应结果 {}",result);
             log.info("耗时 {}ms",end-start);
-            log.info("====服务结束====/n");
+            log.info("====服务结束====\n");
         }
     }
 }

@@ -20,7 +20,7 @@
         select * from post where create_time>=DATE_SUB(NOW(),INTERVAL 20 DAY) order by create_time desc limit #{offset}, #{size}
     </select>
 
-    <select id="getById" resultType="com.blog.entity.Post">
+    <select id="getById" resultMap="postMap">
         select * from post where id=#{id}
     </select>
 
@@ -31,7 +31,7 @@
     </insert>
 
     <update id="update">
-        update post set title=#{title}, context=#{context} where id=#{id}
+        update post set title=#{title}, context=#{context},comment_count=#{commentCount},like_count=#{likeCount} where id=#{id}
     </update>
 
     <delete id="delete">
@@ -42,10 +42,6 @@
         select * from post where title like concat('%',#{keyword},'%')
     </select>
 
-    <update id="setPostLikeCount">
-        update post set like_count=#{likeCount} where id=#{id}
-    </update>
-    
     <select id="selectHotPosts" resultType="com.blog.dto.HotPostDTO">
         select
             id as postId,

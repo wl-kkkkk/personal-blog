@@ -33,6 +33,12 @@ public class PostController {
         return Result.success(postService.page(pageNum,pageSize));
     }
 
+    /*
+     * 通过id获取文章详细内容
+     * controller层：getById
+     * service层：Post getById
+     * mapper:getById
+     * */
     @GetMapping("/{id}")
     public Result getById(@PathVariable Long id){
         return Result.success(postService.getById(id));

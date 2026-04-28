@@ -21,7 +21,6 @@ public class PostServiceImpl implements PostService {
 
     private static final String HOT_POST_KEY="posts:hot:zset";
     private static final String GET_POST_KEY="cache:post:";
-    private static final String USER_POSTS_KEY="user:posts:";
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -29,6 +28,8 @@ public class PostServiceImpl implements PostService {
     private ObjectMapper objectMapper;
     @Autowired
     private CacheClient cacheClient;
+    @Autowired
+    private PostCountServiceImpl postCountService;
 
     @Override
     public List<Post> list() {
@@ -38,13 +39,30 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> page(int pageNum,int pageSize){
         int offset = (pageNum-1)*pageSize;
-        return postMapper.getByPage(offset,pageSize);
+        List<Post> postsbyPage = postMapper.getByPage(offset, pageSize);
+        postCountService.fillPosts(postsbyPage);
+        return postsbyPage;
     }
 
+    /*
+     * 通过id获取文章详细内容
+     * controller层：getById
+     * service层：Post getById
+     * mapper:getById
+     * */
     @Override
     public Post getById(Long id) {
+
         //避免缓存穿透+缓存雪崩
         Post post = cacheClient.getWithPassThrough(GET_POST_KEY, id, Post.class, postMapper::getById);
+
+        if(post==null){
+            return post;
+        }
+
+        //覆盖实时数据
+        postCountService.fillPost(post);
+
         return post;
         /*//避免缓存穿透
         String strJson = stringRedisTemplate.opsForValue().get(GET_POST_KEY + id);
@@ -90,11 +108,16 @@ public class PostServiceImpl implements PostService {
      * */
     @Override
     public List<Post> searchByUserId(Long userId){
-        List<?> postIds = cacheClient.getWithPassThrough(GET_POST_KEY, userId, List.class, postMapper::searchByUserId);
+        List<Object> postIds = cacheClient.getWithPassThrough(GET_POST_KEY, userId, List.class, postMapper::searchByUserId);
+        if(postIds==null){
+            return null;
+        }
         List<Post> posts = postIds.stream()
                 .map(id -> ((Number) id).longValue())
                 .map(postMapper::getById)
                 .collect(Collectors.toList());
+        //覆盖实时数据
+        postCountService.fillPosts(posts);
         return posts;
     }
 
@@ -104,7 +127,10 @@ public class PostServiceImpl implements PostService {
         post.setUserId(userId);
         post.setCreateTime(new Date());
         postMapper.insert(post);
-        //第一次查询写入缓存即可,懒加载
+
+        String key=GET_POST_KEY+userId;
+        stringRedisTemplate.delete(key);
+        //不能一次查询写入缓存即可,懒加载//访问文章的时候就访问不到了//错了//哈哈最后还是懒加载
     }
 
     @Override
@@ -142,7 +168,16 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<Post> searchByTitle(String keyword){
-        return postMapper.searchByTitle(keyword);
+        List<Post> posts = postMapper.searchByTitle(keyword);
+
+        if(posts==null||posts.isEmpty()){
+            return null;
+        }
+
+        //覆盖实时数据
+        postCountService.fillPosts(posts);
+
+        return posts;
     }
 
 
@@ -219,10 +254,10 @@ public class PostServiceImpl implements PostService {
             hotPosts.add(postMap.get(postId));
         }
 
+        //覆盖新数据
+        postCountService.fillPosts(hotPosts);
+
         return hotPosts;
     }
-
-
-
 
 }

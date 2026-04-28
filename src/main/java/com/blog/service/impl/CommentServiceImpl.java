@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -46,7 +47,8 @@ public class CommentServiceImpl implements CommentService {
         //先做个懒加载，看是否在内存中
         Boolean isExist = stringRedisTemplate.hasKey(commentCountKey);
         if(isExist==false){
-            stringRedisTemplate.opsForValue().set(commentCountKey,postMapper.getById(postId).getCommentCount().toString());
+            Long commentCount=postMapper.getById(postId).getCommentCount();
+            stringRedisTemplate.opsForValue().set(commentCountKey,commentCount.toString());
         }
         stringRedisTemplate.opsForValue().increment(commentCountKey);
 
@@ -64,11 +66,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<Comment> listByPostId(Long postId){
         //我决定用hashmap放所有评论去查找而不是一个一个找
-        Map<Long,Comment> hashmap=new HashMap<>();
         List<Comment> allComments=commentMapper.selectByPostId(postId);
-        for(Comment comment:allComments){
-            hashmap.put(comment.getId(),comment);
-        }
+        Map<Long,Comment> hashmap = allComments.stream().collect(Collectors.toMap(c->c.getId(),c->c));
 
         //根评论
         List<Comment> roots=new ArrayList<>();

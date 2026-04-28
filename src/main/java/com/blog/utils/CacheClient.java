@@ -45,6 +45,7 @@ public class CacheClient {
             try {
                 //泛型擦除，需要传进来类型
                 R r = objectMapper.readValue(strJson,type);
+
                 return r;
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("缓存反序列化失败");

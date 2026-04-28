@@ -105,6 +105,27 @@
         .item-time {
             font-size: 13px;
             color: #cfcfcf;
+            margin-bottom: 10px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 22px;
+            font-size: 14px;
+            color: #d6d6d6;
+        }
+
+        .item-action {
+            cursor: default;
+        }
+
+        .item-action.share {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .item-action.share:hover {
+            color: #fff;
         }
 
         .empty {
@@ -169,6 +190,31 @@
         return post.createTime || post.createdAt || post.time || "";
     }
 
+    function getCommentCount(post) {
+        return post.commentCount || post.comments || post.commentNum || 0;
+    }
+
+    function getLikeCount(post) {
+        return post.likeCount || post.likes || post.thumbUp || post.likedNum || 0;
+    }
+
+    function getPostId(post) {
+        return post.id || post.postId;
+    }
+
+    function handleShareClick(event, post) {
+        event.stopPropagation();
+        const id = getPostId(post);
+        const shareUrl = id ? `${window.location.origin}/post-detail.html?id=${id}` : window.location.href;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareUrl)
+                .then(() => alert("已复制转发链接"))
+                .catch(() => alert("转发链接：" + shareUrl));
+        } else {
+            alert("转发链接：" + shareUrl);
+        }
+    }
+
     //搜索结果渲染功能
     function renderPosts(posts) {
         resultList.innerHTML = "";
@@ -187,10 +233,22 @@
                 <div class="item-title">${getTitle(post)}</div>
                 <div class="item-content">${getText(post)}</div>
                 <div class="item-time">${getTime(post)}</div>
+                <div class="item-actions">
+                    <span class="item-action">评论 ${getCommentCount(post)}</span>
+                    <span class="item-action">点赞 ${getLikeCount(post)}</span>
+                    <span class="item-action share">转发</span>
+                </div>
             `;
 
+            const shareBtn = li.querySelector(".item-action.share");
+            if (shareBtn) {
+                shareBtn.addEventListener("click", function(event) {
+                    handleShareClick(event, post);
+                });
+            }
+            //点击跳转详情页面
             li.addEventListener("click", function() {
-                const id = post.id || post.postId;
+                const id = getPostId(post);
                 if (id) {
                     window.location.href = "/post-detail.html?id=" + id;
                 }
