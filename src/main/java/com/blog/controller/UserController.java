@@ -30,4 +30,12 @@ public class UserController {
         String token= JwtUtil.generateToken(dbUser.getId());
         return Result.success(token) ;
     }
+
+    @NoAuth
+    @PostMapping("/register")
+    public Result register(@RequestBody User user){
+        userService.register(user);
+        return Result.success();
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.blog.service;
 
+import com.blog.dto.PostDetailDTO;
 import com.blog.entity.Post;
 
 import java.util.List;
@@ -20,6 +21,8 @@ public interface PostService {
      * map层：searchByUserId
      * */
     List<Post> searchByUserId(Long userId);
+
+    PostDetailDTO getPostDetailById(Long postId);
 
     List<Post> getHotPosts();
 /*    void likeBlog(Long id);*/

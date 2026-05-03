@@ -1,5 +1,6 @@
 package com.blog.service.impl;
 
+import com.blog.dto.PostDetailDTO;
 import com.blog.entity.Post;
 import com.blog.service.PostCountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,26 @@ public class PostCountServiceImpl implements PostCountService {
 
     @Override
     public void fillPost(Post post) {
+        //覆盖实时数据
+        //获取key
+        String likeCountKey=POST_LIKE_COUNT+post.getId();
+        String commentCountKey=COMMENT_COUNT_KEY+post.getId();
+
+        //获取数据，看是否是空的
+        String likeCountStr=stringRedisTemplate.opsForValue().get(likeCountKey);
+        String commentCountStr=stringRedisTemplate.opsForValue().get(commentCountKey);
+
+        //覆盖
+        if(likeCountStr!=null){
+            post.setLikeCount(Long.parseLong(likeCountStr));
+        }
+        if(commentCountStr!=null){
+            post.setCommentCount(Long.parseLong(commentCountStr));
+        }
+    }
+
+    @Override
+    public void fillPost(PostDetailDTO post) {
         //覆盖实时数据
         //获取key
         String likeCountKey=POST_LIKE_COUNT+post.getId();

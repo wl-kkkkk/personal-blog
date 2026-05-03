@@ -1,5 +1,6 @@
 package com.blog.service.impl;
 
+import com.blog.dto.PostDetailDTO;
 import com.blog.entity.Post;
 import com.blog.mapper.PostMapper;
 import com.blog.service.PostService;
@@ -21,11 +22,11 @@ public class PostServiceImpl implements PostService {
 
     private static final String HOT_POST_KEY="posts:hot:zset";
     private static final String GET_POST_KEY="cache:post:";
+    private static final String GET_DETAIL_KEY="cache:detail:";
+    private static final String GET_POSTS_KEY="cache:posts:";
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-    @Autowired
-    private ObjectMapper objectMapper;
     @Autowired
     private CacheClient cacheClient;
     @Autowired
@@ -100,6 +101,22 @@ public class PostServiceImpl implements PostService {
         }*/
     }
 
+    @Override
+    public PostDetailDTO getPostDetailById(Long postId){
+
+        //避免缓存穿透+缓存雪崩
+        PostDetailDTO post = cacheClient.getWithPassThrough(GET_DETAIL_KEY,postId,PostDetailDTO.class,postMapper::getPostDetailById);
+
+        if(post==null){
+            return post;
+        }
+
+        //覆盖实时数据
+        postCountService.fillPost(post);
+
+        return post;
+    }
+
     /*
      * 获取某个用户的所有文章
      * controller层：getPostsByUserId
@@ -108,7 +125,7 @@ public class PostServiceImpl implements PostService {
      * */
     @Override
     public List<Post> searchByUserId(Long userId){
-        List<Object> postIds = cacheClient.getWithPassThrough(GET_POST_KEY, userId, List.class, postMapper::searchByUserId);
+        List<Object> postIds = cacheClient.getWithPassThrough(GET_POSTS_KEY, userId, List.class, postMapper::searchByUserId);
         if(postIds==null){
             return null;
         }
@@ -120,6 +137,7 @@ public class PostServiceImpl implements PostService {
         postCountService.fillPosts(posts);
         return posts;
     }
+
 
     @Override
     public void add(Post post) {

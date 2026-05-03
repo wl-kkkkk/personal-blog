@@ -1,6 +1,7 @@
 package com.blog.mapper;
 
 import com.blog.dto.HotPostDTO;
+import com.blog.dto.PostDetailDTO;
 import com.blog.entity.Post;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -22,6 +23,8 @@ public interface PostMapper {
     * */
     Post getById(Long id);
 
+    PostDetailDTO getPostDetailById(Long postId);
+
     /*
      * 获取某个用户的所有文章
      * controller层：getPostsByUserId
@@ -34,5 +37,6 @@ public interface PostMapper {
 
     List<HotPostDTO> selectHotPosts();
     List<Post> selectPostsByIds(Set<String> postIds);
+
 
 }

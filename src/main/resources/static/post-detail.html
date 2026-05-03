@@ -300,7 +300,7 @@
             postContentEl.innerText = "请通过 post-detail.html?id=文章ID 访问";
             return Promise.resolve();
         }
-        return fetch(`/post/${encodeURIComponent(postId)}`, {
+        return fetch(`/post/details/${encodeURIComponent(postId)}`, {
             headers: {
                 "Authorization": "Bearer " + token
             }

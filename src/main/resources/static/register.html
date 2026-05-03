@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>登录</title>
+    <title>注册</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,6 @@
             justify-content: center;
         }
 
-        /* 半透明卡片 */
         .login-box {
             width: 350px;
             padding: 40px;
@@ -85,71 +84,63 @@
 <body>
 
 <div class="login-box">
-    <h2>登录</h2>
+    <h2>注册</h2>
 
     <div class="input-box">
-        <input id="username" placeholder="用户名">
+        <input id="username" placeholder="用户名" autocomplete="username">
     </div>
 
     <div class="input-box">
-        <input id="password" type="password" placeholder="密码">
+        <input id="password" type="password" placeholder="密码" autocomplete="new-password">
     </div>
 
-    <button class="btn" onclick="login()">登录</button>
+    <div class="input-box">
+        <input id="password2" type="password" placeholder="确认密码" autocomplete="new-password">
+    </div>
+
+    <button class="btn" onclick="register()">注册</button>
 
     <div class="extra">
-        <a href="/register.html">注册账号</a>
+        <a href="/login.html">已有账号？去登录</a>
     </div>
 </div>
 
 <script>
-    function login() {
-        const username = document.getElementById('username').value;
+    function register() {
+        const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
+        const password2 = document.getElementById('password2').value;
 
-        fetch('/user/login', {
+        if (!username || !password) {
+            alert('用户名和密码不能为空');
+            return;
+        }
+        if (password !== password2) {
+            alert('两次输入的密码不一致');
+            return;
+        }
+
+        fetch('/user/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ username, password })
         })
-            .then(res => {
-                console.log("响应状态:", res.status);
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
-                console.log("返回数据:", data);
-
                 if (data.code === 200) {
-
-                    const token = data.data;
-                    localStorage.setItem("token", token);
-
-                    try {
-                        const payload = JSON.parse(atob(token.split(".")[1]));
-                        const userId = payload.sub;
-
-                        console.log("解析出的userId:", userId);
-
-                        if (userId) {
-                            localStorage.setItem("userId", userId);
-                        }
-                    } catch (e) {
-                        console.log("token解析失败", e);
-                    }
-
-                    alert("登录成功");
-                    window.location.href = "/index.html";
-
+                    alert('注册成功，请登录');
+                    window.location.href = '/login.html';
                 } else {
-                    alert("登录失败：" + data.msg);
+                    const msg = data.message || data.msg || '注册失败';
+                    alert(msg);
                 }
             })
             .catch(err => {
-                console.error("请求失败:", err); // 👈 关键
+                console.error('请求失败:', err);
+                alert('网络错误，请稍后重试');
             });
-
     }
 </script>
 

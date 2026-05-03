@@ -24,6 +24,18 @@
         select * from post where id=#{id}
     </select>
 
+    <select id="getPostDetailById" resultType="com.blog.dto.PostDetailDTO">
+        select
+            p.id,p.title,p.context,p.user_id as userId,
+            p.create_time as createTime,
+            p.like_count as likeCount,
+            p.comment_count as commentCount,
+            u.username as authorName
+        from post p
+                 left join user u on u.id=p.user_id
+        where p.id=#{postId}
+    </select>
+
     <insert id="insert">
         insert into post(title,context,user_id,create_time)
         values (#{title},#{context},#{userId},#{createTime})

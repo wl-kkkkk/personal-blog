@@ -1,6 +1,5 @@
 package com.blog.controller;
 
-import com.blog.annotation.NoAuth;
 import com.blog.entity.Post;
 import com.blog.service.PostService;
 import com.blog.utils.Result;
@@ -43,6 +42,12 @@ public class PostController {
     public Result getById(@PathVariable Long id){
         return Result.success(postService.getById(id));
     }
+
+    @GetMapping("/details/{postId}")
+    public Result getPostDetailById(@PathVariable Long postId){
+        return Result.success(postService.getPostDetailById(postId));
+    }
+
 
     @PostMapping("/add")
     public Result add(@RequestBody Post post){
