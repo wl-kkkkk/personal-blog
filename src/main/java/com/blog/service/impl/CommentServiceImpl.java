@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +36,13 @@ public class CommentServiceImpl implements CommentService {
         Long userId= UserContext.getUserId();
         comment.setUserId(userId);
         if(comment.getParentId()==null) comment.setParentId(0L);
+        comment.setCreateTime(new Date());
         commentMapper.publishComment(comment);
+
+
+        //删除对应的查询个人评论仓库key
+        String userCommentKey=USER_COMMENT_KEY+userId;
+        stringRedisTemplate.delete(userCommentKey);
 
         Long postId=comment.getPostId();
         //定时任务更新文章评论数

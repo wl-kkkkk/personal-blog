@@ -146,7 +146,7 @@ public class PostServiceImpl implements PostService {
         post.setCreateTime(new Date());
         postMapper.insert(post);
 
-        String key=GET_POST_KEY+userId;
+        String key=GET_POSTS_KEY+userId;
         stringRedisTemplate.delete(key);
         //不能一次查询写入缓存即可,懒加载//访问文章的时候就访问不到了//错了//哈哈最后还是懒加载
     }
@@ -254,7 +254,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getHotPosts(){
         //获取前十的post
-        Set<String> postIds = stringRedisTemplate.opsForZSet().range(HOT_POST_KEY, 0, 9);
+        Set<String> postIds = stringRedisTemplate.opsForZSet().reverseRange(HOT_POST_KEY, 0, 9);
 
         if(postIds.isEmpty()){
             return new ArrayList<>();
