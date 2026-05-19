@@ -98,7 +98,9 @@ public <R> R getWithPassThrough(String key, Long id, Class<R> type, Function<Lon
 
 提取到公共方法中，这里给出缓存穿透的程序流程图
 
-<img src="./assets/cache-pass-through.png" width="60%">
+<img src="./images/cache-pass-through.png" width="60%">
+
+
 # Docker compose部署
 
 项目采用 Docker Compose 进行容器化部署，
