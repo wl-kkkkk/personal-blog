@@ -1,0 +1,23 @@
+cb96e82 - wl-kkkkk, 13 minutes ago : 上线bug修复,热点文章排序bug、仓库获取评论bug
+04a9e94 - wl-kkkkk, 2 days ago : 新增prod.yml,为部署做准备，部署基本完成，项目基本完成
+2e279be - wl-kkkkk, 2 weeks ago : 修改redis key冲突产生的bug，完成页面详情的业务开发，完成注册模块的开发
+3d8a155 - wl-kkkkk, 3 weeks ago : 修改了大量bug，彻底解决redis的实时性与获取数据库数据到前端的异步性，并将方法提取出来
+08516a2 - wl-kkkkk, 3 weeks ago : 热榜系统完成，实现实时更新+最终一致性+凌晨3点刷新；前端页面初步完成
+672e483 - wl-kkkkk, 4 weeks ago : 开始做热榜系统，优化点赞模块，采用hash数据结构定时更新数据库；  优化评论模块，采用懒加载，定时更新； 增加同步任务，评论同步任务和点赞同步任务，同步到数据库的同时，记录修改过的文章id；增加积分同步任务，同步积分
+aa76b00 - wl-kkkkk, 4 weeks ago : 最后一个模块点赞模块基本完成，采用定时任务更新来更新数据库点赞量
+575bb22 - wl-kkkkk, 5 weeks ago : 修改service层代码，解决缓存穿透、缓存雪崩，缓存击穿问题，新增缓存预热模块，之后继续修改post模块
+56e5e68 - wl-kkkkk, 5 weeks ago : post新增viewcount字段，用redis搭建新增方法
+e795f49 - wl-kkkkk, 5 weeks ago : commet映射文件新增resultmap，解决了文件报错问题（构建文件树时除了context字段其余字段都为null）
+6ee0413 - wl-kkkkk, 5 weeks ago : 初步完成评论模块，评论树初步构建完成，出现空指针异常
+79869a2 - wl-kkkkk, 5 weeks ago : 新增redis缓存热门文章模块，新增result工具类 用于处理controller接口使其返回同一类型的消息方便处理
+3398296 - wl-kkkkk, 7 weeks ago : 完成JWT登录模块建设，用拦截器、自定义标签进行筛选，还采用了ThreadLocal保存用户上下文
+20e815b - wl-kkkkk, 7 weeks ago : 新增jwt验证，加入拦截器并成功注册
+bc6a853 - wl-kkkkk, 7 weeks ago : 分页、模糊查询、初步登录模块
+09f90d0 - wl-kkkkk, 7 weeks ago : 文章模块业务层controller层初步实现并测试
+ba6a3db - wl-kkkkk, 8 weeks ago : 搭建基本表，验证数据库是否连接
+8aa99ce - wl-kkkkk, 8 weeks ago : 初始化个人博客项目
+
+
+
+git log --pretty=format:"%h - %an, %ar : %s" > gitee_log.txt
+
