@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Tests" type="MavenRunConfiguration" factoryName="Maven">
+    <MavenParameters>
+      <option name="profiles">
+        <list />
+      </option>
+      <option name="goals">
+        <list>
+          <option value="test" />
+          <option value="-Dtest=com.blog.controller.TestController" />
+        </list>
+      </option>
+      <option name="profilesMap">
+        <map />
+      </option>
+    </MavenParameters>
+    <method v="2" />
+  </configuration>
+</component>

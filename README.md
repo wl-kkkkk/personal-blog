@@ -22,11 +22,10 @@
 
 ```
 - 用户注册/登录（JWT 认证）
-- 文章发布、编辑、删除、分页搜索等
+- 文章发布、编辑、分页搜索等
 - 评论系统（支持多级回复）
 - 点赞/取消点赞（Redis Set + 异步同步）
 - 热门文章排行榜（ZSet + 定时计算）
-- 浏览量统计（Redis 计数 + 定时落库）
 - 个人中心（我的文章、我的评论）
 ```
 
@@ -46,7 +45,7 @@
 (like_count*2+comment_count*3)/(pow(DATEDIFF(NOW(),create_time)+2,0.5))
 ```
 
-定时三小时刷新热榜（5min定时刷新点赞数和评论数量）
+定时凌晨3点刷新热榜（5min定时刷新点赞数和评论数量）
 
 ### 缓存优化
 
@@ -96,10 +95,6 @@ public <R> R getWithPassThrough(String key, Long id, Class<R> type, Function<Lon
     }
 ```
 
-提取到公共方法中，这里给出缓存穿透的程序流程图
-
-<img src="./images/cache-pass-through.png" width="60%">
-
 
 # Docker compose部署
 
@@ -127,4 +122,24 @@ docker compose up -d --build
 ```
 
 其中init.sql和docker-compose.yml我也上传了,clone的时候注意路径
+
+
+
+# 系统架构图
+
+<img src="./images/deployment-architecture.png" width="50%" />
+
+
+
+# 流程图
+
+## 热榜流程图
+
+<img src="./images/hotpost.png" width="50%" />
+
+## 缓存穿透流程图
+
+总共有四个地方用到了缓存穿透，这里以通过userId查询某个人写过的文章为例子
+
+<img src="./images/cache-pass-through.png" width="50%" />
 

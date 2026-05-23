@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>文章详情</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: url('https://fastly.picsum.photos/id/888/1920/1080.jpg?hmac=gILdWiv5GfYCDYWFiZrEcK8TpR6X-Mm05tExxvr6YsY') no-repeat center center/cover;
+            font-family: Arial, sans-serif;
+            color: white;
+            padding-bottom: 40px;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            font-size: 18px;
+        }
+
+        .nav-left {
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .nav-right span {
+            margin-left: 20px;
+            cursor: pointer;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-right span:hover {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .main {
+            width: 1200px;
+            max-width: calc(100% - 40px);
+            margin: 20px auto 0;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .left-actions {
+            width: 130px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 14px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .action-btn {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            font-size: 14px;
+            padding: 10px 8px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .center {
+            flex: 1;
+            min-width: 0;
+            background: rgba(0, 0, 0, 0.28);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .post-title {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .post-meta {
+            color: #d0d0d0;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .post-content {
+            font-size: 16px;
+            line-height: 1.9;
+            color: #ececec;
+            white-space: pre-wrap;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 14px;
+        }
+
+        .comment-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .comment-item {
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+        }
+
+        .comment-content {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #e8e8e8;
+            margin-bottom: 6px;
+        }
+
+        .comment-time {
+            font-size: 13px;
+            color: #cfcfcf;
+        }
+
+        .comment-editor {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .comment-input {
+            flex: 1;
+            min-height: 88px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            padding: 10px;
+            resize: vertical;
+            font-size: 14px;
+        }
+
+        .comment-submit {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            font-size: 14px;
+            padding: 10px 14px;
+            cursor: pointer;
+        }
+
+        .hint {
+            color: #d5d5d5;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <div class="nav-left">WANGLIU</div>
+    <div class="nav-right">
+        <span onclick="window.location.href='/index.html'">首页</span>
+        <span onclick="window.location.href='/article.html'">文章</span>
+        <span onclick="window.location.href='/repo.html'">仓库</span>
+        <span onclick="window.location.href='/hot.html'">热点</span>
+        <span onclick="window.location.href='/publish.html'">发布</span>
+    </div>
+</div>
+
+<div class="main">
+    <div class="left-actions">
+        <button class="action-btn" id="likeBtn">点赞 0</button>
+        <button class="action-btn" id="commentBtn">评论 0</button>
+        <button class="action-btn" id="shareBtn">转发</button>
+    </div>
+
+    <div class="center">
+        <h1 class="post-title" id="postTitle">加载中...</h1>
+        <div class="post-meta" id="postMeta"></div>
+        <div class="post-content" id="postContent">正在加载文章内容...</div>
+
+        <h2 class="section-title" id="commentSection">评论区</h2>
+        <ul class="comment-list" id="commentList"></ul>
+
+        <div class="comment-editor">
+            <textarea id="commentInput" class="comment-input" placeholder="写下你的评论..."></textarea>
+            <button id="commentSubmit" class="comment-submit">发布评论</button>
+        </div>
+        <div class="hint" id="hintText"></div>
+    </div>
+</div>
+
+<script>
+    // 登录态校验：未登录直接跳转登录页
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+    // 页面基础参数与元素缓存
+    const postId = new URLSearchParams(window.location.search).get("id");
+    const postTitleEl = document.getElementById("postTitle");
+    const postMetaEl = document.getElementById("postMeta");
+    const postContentEl = document.getElementById("postContent");
+    const commentListEl = document.getElementById("commentList");
+    const commentInputEl = document.getElementById("commentInput");
+    const commentSubmitEl = document.getElementById("commentSubmit");
+    const commentBtn = document.getElementById("commentBtn");
+    const likeBtn = document.getElementById("likeBtn");
+    const shareBtn = document.getElementById("shareBtn");
+    const hintText = document.getElementById("hintText");
+    const commentSection = document.getElementById("commentSection");
+
+    function getTitle(post) {
+        return (post && (post.title || post.name)) || "未命名文章";
+    }
+
+    function getContent(post) {
+        return (post && (post.content || post.context || post.desc)) || "";
+    }
+
+    function getTime(post) {
+        return (post && (post.createTime || post.createdAt || post.time)) || "";
+    }
+
+    function getAuthor(post) {
+        return (post && (post.authorName || post.username || post.userName || post.author)) || "匿名";
+    }
+
+    function getLikeCount(post) {
+        if (!post) return 0;
+        const count = post.likeCount ?? post.likes ?? post.thumbUp ?? post.likedNum ?? post.likeNum ?? post.postLikeCount ?? 0;
+        return Number.isFinite(Number(count)) ? Number(count) : 0;
+    }
+
+    // 渲染评论列表，并同步左侧“评论”按钮计数,评论数=comments.length
+    function renderComments(comments) {
+        commentListEl.innerHTML = "";
+        if (!Array.isArray(comments) || comments.length === 0) {
+            commentListEl.innerHTML = "<li class='comment-item'><div class='comment-content'>暂无评论</div></li>";
+            commentBtn.innerText = "评论 0";
+            return;
+        }
+        commentBtn.innerText = "评论 " + comments.length;
+        comments.forEach(function(comment) {
+            const li = document.createElement("li");
+            li.className = "comment-item";
+            li.innerHTML = `
+                <div class="comment-content">${comment.content || ""}</div>
+                <div class="comment-time">${comment.createTime || comment.createdAt || ""}</div>
+            `;
+            commentListEl.appendChild(li);
+        });
+    }
+
+    // 按文章ID加载评论：GET /comment/list?postId=...  从comment
+    function fetchComments() {
+        if (!postId) return Promise.resolve();
+        return fetch(`/comment/list?postId=${encodeURIComponent(postId)}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && data.code === 200) {
+                    renderComments(data.data || []);
+                } else {
+                    renderComments([]);
+                }
+            })
+            .catch(function() {
+                renderComments([]);
+            });
+    }
+
+    // 加载文章详情并渲染标题/元信息/正文/点赞数：GET /post/{id}
+    function fetchPostDetail() {
+        if (!postId) {
+            postTitleEl.innerText = "缺少文章ID";
+            postContentEl.innerText = "请通过 post-detail.html?id=文章ID 访问";
+            return Promise.resolve();
+        }
+        return fetch(`/post/details/${encodeURIComponent(postId)}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                const post = data && data.code === 200 ? data.data : null;
+                if (!post) {
+                    postTitleEl.innerText = "文章加载失败";
+                    postContentEl.innerText = "未获取到文章详情数据";
+                    likeBtn.innerText = "点赞 0";
+                    return;
+                }
+                postTitleEl.innerText = getTitle(post);
+                postMetaEl.innerText = `${getAuthor(post)}  ${getTime(post)}`;
+                postContentEl.innerText = getContent(post) || "暂无正文";
+                likeBtn.innerText = "点赞 " + getLikeCount(post);
+            })
+            .catch(function() {
+                postTitleEl.innerText = "文章加载失败";
+                postContentEl.innerText = "请求失败，请稍后重试";
+                likeBtn.innerText = "点赞 0";
+            });
+    }
+
+    // 点赞：PUT /post/like?postId=...
+    likeBtn.addEventListener("click", function() {
+        if (!postId) return;
+        fetch(`/post/like?postId=${encodeURIComponent(postId)}`, {
+            method: "PUT",
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && data.code === 200) {
+                    const latestCount = Number(data.data);
+                    likeBtn.innerText = "点赞 " + (Number.isFinite(latestCount) ? latestCount : 0);
+                    hintText.innerText = "点赞成功";
+                } else {
+                    hintText.innerText = "点赞失败";
+                }
+            })
+            .catch(function() {
+                hintText.innerText = "点赞失败";
+            });
+    });
+
+    // 评论按钮：快速定位到评论输入区域
+    commentBtn.addEventListener("click", function() {
+        commentSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        commentInputEl.focus();
+    });
+
+    // 转发：复制文章详情链接到剪贴板（仅前端）
+    shareBtn.addEventListener("click", function() {
+        const shareUrl = postId ? `${window.location.origin}/post-detail.html?id=${postId}` : window.location.href;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareUrl)
+                .then(function() {
+                    hintText.innerText = "已复制转发链接";
+                })
+                .catch(function() {
+                    hintText.innerText = "转发链接：" + shareUrl;
+                });
+        } else {
+            hintText.innerText = "转发链接：" + shareUrl;
+        }
+    });
+
+    // 发布评论：PUT /comment/add，成功后刷新评论列表
+    commentSubmitEl.addEventListener("click", function() {
+        const content = (commentInputEl.value || "").trim();
+        if (!content) {
+            hintText.innerText = "评论内容不能为空";
+            return;
+        }
+        if (!postId) {
+            hintText.innerText = "缺少文章ID，无法评论";
+            return;
+        }
+        fetch("/comment/add", {
+            method: "PUT",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                postId: Number(postId),
+                content: content
+            })
+        })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && data.code === 200) {
+                    commentInputEl.value = "";
+                    hintText.innerText = "评论发布成功";
+                    fetchComments();
+                } else {
+                    hintText.innerText = "评论发布失败";
+                }
+            })
+            .catch(function() {
+                hintText.innerText = "评论发布失败";
+            });
+    });
+
+    // 页面初始化：先拉文章，再拉评论
+    fetchPostDetail().then(function() {
+        fetchComments();
+    });
+</script>
+
+</body>
+</html>
